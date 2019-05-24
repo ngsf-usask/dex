@@ -107,11 +107,15 @@ def expander(csv_file, con_table, pcut, fcut, tag):
     if len(tag) > 0:
         outname = ''.join([fname, '_', tag, '_full.xlsx'])
         shortname = ''.join([fname, '_', tag, '_DE_only.xlsx'])
+        csvname = ''.join([fname, '_', tag, '_full.csv'])
     else:
         outname = ''.join([fname, tag, '_full.xlsx'])
         shortname = ''.join([fname, tag, '_DE_only.xlsx'])
+        csvname = ''.join([fname, tag, 'full.csv'])
     
     # write to file
+    print(f'Writing {csvname}')
+    d1.to_csv(csvname, index=False)
     print(f'Writing {outname}')
     d1.to_excel(outname, index=False, sheet_name=fname, na_rep='ND')
     print(f'Writing {shortname}')
