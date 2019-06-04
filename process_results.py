@@ -11,7 +11,7 @@ def get_args():
     """Get arguments from command line"""
 
     parser = argparse.ArgumentParser(
-              description='Annotate the DESeq2 reuslts files')
+              description='Annotate the DESeq2 results files')
     parser.add_argument('files', help='file-of-files of DESeq2 output csv files, one per line')
     parser.add_argument('genes', help='gene_id to gene_name conversion table')
     parser.add_argument('-f','--foldchange', help='fold-change cutoff', type=float, default=2.0)
