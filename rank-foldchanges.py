@@ -30,7 +30,7 @@ def load_data(datfile):
     """load data from a processed deseq2 results csv"""
     cols = ['gene_id','gene_name','baseMean','fold_change','log2FoldChange','lfcSE',
         'stat','pvalue','padj','change_direction','significant']
-    dat = pd.read_csv(datfile,header=None, names = cols)
+    dat = pd.read_csv(datfile,header=1, names=cols)
     dat2 = dat[dat.significant == 'YES']
 
     return dat2
