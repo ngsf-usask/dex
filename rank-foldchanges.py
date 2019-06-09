@@ -43,7 +43,7 @@ def main():
     dat = load_data(datfile)
 
     minp = dat[dat.padj != 0].padj.min() * 0.01
-    dat['padj'].replace(0.0, minp)
+    dat['padj'].replace(0.0, minp, inplace=True)
     dat['sf'] = dat.apply(lambda x: (x['fold_change'] / x['padj']), axis=1)
     dat.sort_values(by='sf', inplace=True, ascending=False)
     dat['rank'] = dat.sf.rank(method='first', pct=True)
