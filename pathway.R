@@ -29,7 +29,7 @@ getArgs <- function(){
 
 # check args
 opt <- getArgs()
-if (is.null(opt$csv) || is.null(opt$pathway){
+if (is.null(opt$csv) || is.null(opt$pathway)){
   print_help(opt_parser)
   stop("Input file and KEGG pathway must be supplied", call.=FALSE)
 }
