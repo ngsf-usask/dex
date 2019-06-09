@@ -15,7 +15,7 @@ Differential expression workflow for RNA-seq data
 
 4. interactive-volcano.R
 
-   make interactive and static plots
+   make interactive and static plots  
    uses cropper.sh and volcano-functions.R
 
 5. rank-foldchanges.py
