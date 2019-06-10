@@ -6,4 +6,6 @@
 infile=$1
 nam=$(echo $infile | awk -F\/ '{print $NF}' | sed 's/_full.csv//')
 
-awk -F\, '$NF=="YES" && $(NF-1)=="UP"{print $1,$4};$NF=="YES" && $(NF-1)=="DOWN"{print $1,"-"$4}' $infile | sed 's/\./ /' | awk '{print $1","$3}' > ${nam}_dir.csv
+awk -F\, '$NF=="YES" && $(NF-1)=="UP"{print $1,$4};$NF=="YES" && $(NF-1)=="DOWN"{print $1,"-"$4}' $infile | \
+    sed 's/\./ /' | \
+    awk 'BEGIN{OFS="\t"};{print $1,$3}' > ${nam}_IPA.tsv
