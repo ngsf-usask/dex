@@ -73,15 +73,21 @@ color_selector <- function(tibble_row){
 }
 
 
-shooter <- function(webfile_name, tries=5){
+shooter <- function(webfile_name, tries=10){
     # webfile_name is partial filename of html rbokeh plot to capture
     message('Trying to capture web plot')
     prober <- function(webfile_name, trial){
-        message(paste0('Try ', trial))
+        if(trial==1){
+            message(paste0('Try ', trial))
+        }
+        else{
+            message(paste0('\nTry ', trial))
+        }
+
         out <- tryCatch(
             {webshot(paste0(name, '_volcano_full.html'), paste0(name, '_volcano_fullX.png'))},
             error=function(e){
-                message('Failed to capture volcano plot')
+                message('Failed to capture volcano plot. Error message:')
                 message(e)
                 return(NA)
             }
@@ -91,6 +97,7 @@ shooter <- function(webfile_name, tries=5){
     for(trial in 1:tries){
         result <- prober(webfile_name, trial)
         if(!(is.na(result))){
+            message('Web plot successfully captured!')
             break
         }
     }

@@ -53,7 +53,7 @@ res <- load_data(datf)
 full <- res$full
 DE <- res$signif
 
-#print(table(full$Significant))
+message('Summary of differential expression results:')
 print(table(full$Significant))
 
 # the full dataset is too large for most machines to handle interactively
