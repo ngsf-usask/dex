@@ -26,7 +26,6 @@ getArgs <- function(){
 # check args
 opt <- getArgs()
 if (is.null(opt$csv)){
-  print_help(opt_parser)
   stop("At least one argument must be supplied (input file)", call.=FALSE)
 }
 
@@ -54,6 +53,7 @@ res <- load_data(datf)
 full <- res$full
 DE <- res$signif
 
+#print(table(full$Significant))
 print(table(full$Significant))
 
 # the full dataset is too large for most machines to handle interactively
@@ -70,7 +70,7 @@ suppressWarnings(q <- figure(title=name) %>%
     color=color
     ))
 saveWidget(q, paste0(name, '_volcano_full.html'))
-webshot(paste0(name, '_volcano_full.html'), paste0(name, '_volcano_fullX.png'))
+shooter(name) ### TODO finish this fn # TODO all lines below depend on fixing this one
 
 # crop the png with imagemagick through shell, for reasons
 cmd <- paste0(script_dir, '/cropper.sh ', paste0(name, '_volcano_fullX.png'))
