@@ -70,7 +70,7 @@ suppressWarnings(q <- figure(title=name) %>%
     color=color
     ))
 saveWidget(q, paste0(name, '_volcano_full.html'))
-shooter(name) ### TODO finish this fn # TODO all lines below depend on fixing this one
+shooter(name)
 
 # crop the png with imagemagick through shell, for reasons
 cmd <- paste0(script_dir, '/cropper.sh ', paste0(name, '_volcano_fullX.png'))
