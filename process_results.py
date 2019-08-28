@@ -111,7 +111,7 @@ def expander(csv_file, con_table, pcut, fcut, tag):
     else:
         outname = ''.join([fname, tag, '_full.xlsx'])
         shortname = ''.join([fname, tag, '_DE_only.xlsx'])
-        csvname = ''.join([fname, tag, 'full.csv'])
+        csvname = ''.join([fname, tag, '_full.csv'])
     
     # write to file
     print(f'Writing {csvname}')

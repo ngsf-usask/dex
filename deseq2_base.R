@@ -4,7 +4,8 @@ suppressMessages(require(optparse))
 # setup arg parser
 option_list <- list(
     make_option(c('-d', '--datadir'), type='character', default=NULL,
-        help='data directory', metavar='character'),
+        help='data directory with subdirs named as in samples.txt, each containing quant.sf',
+        metavar='character'),
     make_option(c('-p', '--padj'), type='numeric', default=0.05,
         help='padj threshold', metavar='numeric'),
     make_option(c('-f', '--foldchange'), type='numeric', default=2,
@@ -14,7 +15,11 @@ option_list <- list(
     make_option(c('-t', '--tx2gene'), type='character', default=NULL,
          help='full path to tx2gene table', metavar='character'),
     make_option(c('-c', '--mincounts'), type='numeric', default=10,
-         help='minimum counts per gene per row', metavar='numeric')
+         help='minimum counts per gene per row', metavar='numeric'),
+    make_option(c('-s', '--samples'), type='character', default=NULL,
+         help='full path to samples.txt', metavar='character'),
+    make_option(c('-o', '--condition'), type='character', default=NULL,
+         help='full path to file containing condition table', metavar='character')
 )
 
 opt_parser <- OptionParser(option_list=option_list)
@@ -38,25 +43,27 @@ padj_cut <- opt$padj
 count_cut <- opt$mincounts
 datadir <- opt$datadir
 tx2geneFile <- opt$tx2gene
-tx2gene<- read_csv(tx2geneFile)
+tx2gene <- read_csv(tx2geneFile)
 name <- opt$name
+samp <- opt$samples
+cond <- opt$condition
 
 # MAIN
-# general setup for 2 conditions, 2 samples per condition
 log2fc_cut <- log2(fc_cut)
-samples <- read.table(paste0(datadir, "stats/samples.txt"), header=TRUE)
-samples <- samples[c(1:4),]
+samples <- read.table(samp, header=TRUE)
 files <- file.path(datadir,samples$run,"quant.sf")
-files <- files[c(1:4)]
 names(files) <- samples$library
-# the gencode transcript fasta has crazy long header lines
+# the gencode transcript fasta has crazy long header lines, hence ignoreAfterBar
 txi <- tximport(files, type = "salmon", tx2gene = tx2gene, ignoreAfterBar=TRUE)
-sampleTable <- data.frame(condition=factor(rep(c('A', 'B'), each=2)))
+sampleTable <- read.csv(cond, colClasses='factor')
 rownames(sampleTable) <- colnames(txi$counts)
-dds <- DESeqDataSetFromTximport(txi, sampleTable, ~condition)
+# import function doesn't seem to accept string for formula
+# so, unfortunately, this needs to be hard-coded every time...
+dds <- DESeqDataSetFromTximport(txi, sampleTable, ~clone) #TODO MODIFY FORMULA HERE
 dds <- dds[rowSums(counts(dds)) >= count_cut,] # drop genes where sum counts is < count_cut
 
 # perform DE according to the specified design
 dds <- DESeq(dds)
-res <- results(dds, alpha=padj_cut, lfcThreshold=log2fc_cut, altHypothesis='greaterAbs')
+# the contrasts argument also needs to be changed PER EXPERIMENT
+res <- results(dds, alpha=padj_cut, lfcThreshold=log2fc_cut, altHypothesis='greaterAbs', contrast=c(0,0.5,0.5))
 write.csv(as.data.frame(res), paste0(name, "_deseq2.csv"))
