@@ -1,32 +1,40 @@
 # dex
 Differential expression workflow for RNA-seq data
 
-1. run-salmon.sh
+0. preprocessing/run-fastp.sh
+
+    gently trim reads
+
+1a. mapping/run-salmon.sh
 
    do quant
 
-2. deseq2_base.R
+1b. alignment/sbatch-star and alignment/run-htseq.sh
 
-   do DE
+   align and quant
 
-3. process-results.py
+2. analysis/deseq2_salmon.R or analysis/deseq2_htseq.R
+
+   do DGE
+
+3. analysis/process-results.py
 
    annotate genes
 
-4. interactive-volcano.R
+4. analysis/interactive-volcano.R
 
    make interactive and static plots  
    uses cropper.sh and volcano-functions.R
 
-5. rank-foldchanges.py
+5. analysis/rank-foldchanges.py
 
    rank FCs for enrichr pathway analysis
 
-6. IPA_prep.sh
+6. analysis/IPA_prep.sh
 
    make input file for IPA
 
-7. plot-venn.R
+7. analysis/plot-venn.R
 
    make 2-Venn diagram
 
