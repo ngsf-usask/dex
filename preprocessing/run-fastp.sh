@@ -21,10 +21,15 @@ while read line; do
         --unpaired1 ${bname1}_trimmed_unpaired.fastq.gz \
         --unpaired2 ${bname2}_trimmed_unpaired.fastq.gz \
         -V \
-        -l 40 \
+        -l 30 \
         -p \
         -w $THREADS \
-        -j ${corename}.json \
-        -h ${corename}.html \
-        -R ${corename}_fastp_report
+        -j ${corename}.trim-report.json \
+        -h ${corename}.trim-report.html \
+        -e 10 \
+        -q 10 \
+        -M 10 \
+        -r \
+        -W 6 \
+        -g
 done < $infile
