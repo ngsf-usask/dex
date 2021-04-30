@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # run fastp to trim adapters and low-quality sequences from reads
-# usage run-fastp.sh file-of-files.txt
+# usage run-fastp.sh file-of-files.txt 6
 # file-of-files has R1 and R2 on single line separated by a space
 
-THREADS=6
-infile=$1
+infile=$1; shift
+threads=$1
 
 while read line; do
     file1=$(echo $line | awk '{print $1}')
@@ -16,14 +16,14 @@ while read line; do
     bname2=$(echo $fname2 | sed 's/.fastq.gz//')
     corename=$(echo $bname1 | sed 's/_R1//')
 
-    $fastp $line --in1 $file1 --in2 $file2 \
+    fastp $line --in1 $file1 --in2 $file2 \
         --out1 ${bname1}_trimmed.fastq.gz --out2 ${bname2}_trimmed.fastq.gz \
         --unpaired1 ${bname1}_trimmed_unpaired.fastq.gz \
         --unpaired2 ${bname2}_trimmed_unpaired.fastq.gz \
         -V \
         -l 30 \
         -p \
-        -w $THREADS \
+        -w $threads \
         -j ${corename}.trim-report.json \
         -h ${corename}.trim-report.html \
         -e 10 \
