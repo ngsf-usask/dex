@@ -73,6 +73,8 @@ def transform_down(ser):
         res = f
     elif direction == 'DOWN':
         res = 1.0/f
+    else:
+        res = f
     
     return res
 
