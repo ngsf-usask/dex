@@ -8,7 +8,7 @@ gtf=$1
 
 htseq-count -f bam \
     -r pos \
-    -s yes \
+    -s reverse \
     -m union \
     --nonunique all \
     $infile \
