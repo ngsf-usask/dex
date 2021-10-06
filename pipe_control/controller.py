@@ -30,20 +30,26 @@ def get_args():
     parser = argparse.ArgumentParser(
         description="Process raw nextSeq RNA-seq results")
     parser.add_argument("libraries", help="txt file where each line is a library ID")
-    parser.add_argument("genomics", help="txt file where first line is absolute path to indexed genome")
+    parser.add_argument("genomics", help="txt file where first line is absolute path to raw data")
     arguments = parser.parse_args()
     return arguments
 
-def call_batch_runs(file_name):
-    in_file = open(file_name, "r")
+def call_batch_runs(lib_file, genome_file):
+    gen_file = open(genome_file, "r")
+    paths =[]
+    for path in gen_file:
+        paths.append(path.strip())
+
+    in_file = open(lib_file, "r")
     for library in in_file:
-        os.system("sbatch ./batch_pipe_RNAseq.sh %s" %library.strip())
+        os.system(f"sbatch ./batch_pipe_RNAseq.sh {library.strip()} {paths[0]}")
+        # TODO keep working on batch pipe
 
 
 
 def main():
     args = get_args()
-    call_batch_runs(args.libraries)
+    call_batch_runs(args.libraries, args.genomics)
     print(args.libraries)
 
 
