@@ -24,8 +24,9 @@ def get_args():
         Obtain arguments from command line
     Return:
         Object where parameters contain string information from command line.
-            .libraries = file name containing library IDs
-            .genomics = file name containing path to genome
+            .libraries = file name for .txt containing library IDs
+            .genomics = file name for .txt containing following information:
+                        [Line 1]: Absolute path to raw data directory
     """
     parser = argparse.ArgumentParser(
         description="Process raw nextSeq RNA-seq results")
@@ -42,16 +43,41 @@ def call_batch_runs(lib_file, genome_file):
 
     in_file = open(lib_file, "r")
     for library in in_file:
-        os.system(f"sbatch ./batch_pipe_RNAseq.sh {library.strip()} {paths[0]}")
+        subprocess.run(["sbatch", "./batch_pipe_RNAseq.sh", library.strip(), paths[0]])
+        # os.system(f"sbatch ./batch_pipe_RNAseq.sh {library.strip()} {paths[0]}")
+        # TODO look up potential vulnerabilities associated with os.system
         # TODO keep working on batch pipe
+        # TODO need to receive and check for completion of batch
+    jobIDs = get_jobIDs()
+    completion_check = {}
+    for jobID in jobIDs:
+        completion_check[jobID] = False
 
+    # check slurm.out files
+    # wait for a given amount of time until ready to check for output line
+    
+def get_jobIDs():
+    """
+    Purpose:
+        Obtain a list of all active jobIDs from "pipe_RNA" runs on sbatch nodes
+    Return:
+        List of jobIDs active on the compute cluster
+    """
+    queue = subprocess.run(["squeue", "-n", "pipe_RNA"], capture_output=True)
+    jobIDs = []
+    for line in queue.stdout.splitlines():
+        steps = (str(line).split())
+        if steps[1].isdigit():
+            jobIDs.append(str(steps[1]))
+    return jobIDs
 
+def check_for_completion(jobID):
+    # use egrep to search for "#NGSF-end", and then return True if found
+    pass
 
 def main():
     args = get_args()
     call_batch_runs(args.libraries, args.genomics)
-    print(args.libraries)
-
 
 if __name__ == "__main__":
     main()

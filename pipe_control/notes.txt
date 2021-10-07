@@ -1,0 +1,15 @@
+07Oct21
+
+WORK ON CONTROLLER.PY READING OUTPUT FROM BATCH
+# Tried using the return feature from os.system or subprocess however the batch ticket will always return 0 because it only calls the ticket
+# Can use #SBATCH --wait to wait until node is done running, but then python needs to call the libraries async. Seems complicated.
+
+# Want to output into slurm-*.out with #NGSF tag so that can call "egrep "^NGSF" -" to pull all the info.
+# However I need the JobID. Stored as $SLURM_JOBID, but how do I get it without the initial job id?
+# "$egrep "^NGSF" slurm-*.out" will call the information for every out file. Could use that but would need to clear all .out files if a run fails. Additionally would have to sort based on JobID after.
+
+# PULL FROM sq?
+# Can run "squeue" with account flag and generate a txt list. However will generate a list of every job including others. Also not really usable by other people.
+
+# Can get a list of all active "pipe_RNA" jobs on the clutser using controller.get_jobIDs
+# Can use this list to check slurm-*.out files now by replacing with 

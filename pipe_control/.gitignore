@@ -1,0 +1,7 @@
+# Files created by node 
+bin/
+lib/
+pyvenv.cfg
+
+# Storage of test slurm documents
+slurms/
