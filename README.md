@@ -5,36 +5,31 @@ Differential expression workflow for RNA-seq data
 
     gently trim reads
 
-1a. mapping/run-salmon.sh
+1. mapping/run-salmon.sh OR alignment/sbatch-star and alignment/run-htseq.sh
 
-   do quant
-
-1b. alignment/sbatch-star and alignment/run-htseq.sh
-
-   align and quant
+    map or align and quant
 
 2. analysis/deseq2_salmon.R or analysis/deseq2_htseq.R
 
-   do DGE
+    do DGE
 
 3. analysis/process-results.py
 
-   annotate genes
+    annotate genes
 
 4. analysis/interactive-volcano.R
 
-   make interactive and static plots  
-   uses cropper.sh and volcano-functions.R
+    make interactive and static plots  
+    uses cropper.sh and volcano-functions.R
 
 5. analysis/rank-foldchanges.py
 
-   rank FCs for enrichr pathway analysis
+    rank FCs for enrichr pathway analysis
 
 6. analysis/IPA_prep.sh
 
-   make input file for IPA
+    make input file for IPA
 
 7. analysis/plot-venn.R
 
-   make 2-Venn diagram
-
+    make 2-Venn diagram
