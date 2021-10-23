@@ -17,5 +17,14 @@ WORK ON CONTROLLER.PY READING OUTPUT FROM BATCH
 
 23Oct21
 VIRUTALENV
-$ source cluster/pipe_RNA/pipe_control/pipe_RNA/bin/activate
+$ source ~/cluster/pipe_RNA/pipe_control/pipe_RNA/bin/activate
 
+Created job_list variable to track all jobs
+
+Created checks.py to contain all the checking scripst
+-> Checks to ensure the run has started.
+-> Also will return the library ID number.
+
+Main controller script will now begin checking as run continues
+-> Future work will be to move onto fastp and fastqc
+-> Long term work will be to figure out timing and async abilities of checking 
