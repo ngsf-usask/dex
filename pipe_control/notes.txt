@@ -13,3 +13,9 @@ WORK ON CONTROLLER.PY READING OUTPUT FROM BATCH
 
 # Can get a list of all active "pipe_RNA" jobs on the clutser using controller.get_jobIDs
 # Can use this list to check slurm-*.out files now by replacing with 
+
+
+23Oct21
+VIRUTALENV
+$ source cluster/pipe_RNA/pipe_control/pipe_RNA/bin/activate
+
