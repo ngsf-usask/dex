@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
 import argparse
-import os
 import subprocess
+import time
+import checks
 
 """
 This script will control the data pipeline for RNA seq data.
@@ -17,6 +18,11 @@ Steps.
 3. The processed results will be analyzed using process_results.py on a node
 4. Volcano plots, and any other results will be exported out of the node.
 """
+
+list_of_jobs = [] # Keeps all job information in dictionaries
+
+
+# TODO : build a function to check the arguments
 
 def get_args():
     """
@@ -43,27 +49,54 @@ def call_batch_runs(lib_file, genome_file):
 
     in_file = open(lib_file, "r")
     for library in in_file:
-        subprocess.run(["sbatch", "./batch_pipe_RNAseq.sh", library.strip(), paths[0]])
-        # os.system(f"sbatch ./batch_pipe_RNAseq.sh {library.strip()} {paths[0]}")
-        # TODO look up potential vulnerabilities associated with os.system
-        # TODO keep working on batch pipe
-        # TODO need to receive and check for completion of batch
-    jobIDs = get_jobIDs()
-    completion_check = {}
-    for jobID in jobIDs:
-        completion_check[jobID] = False
+        subprocess.run(["sbatch", "./batch_pipe_RNAseq.sh",  library.strip(), paths[0]])
 
-    # check slurm.out files
-    # wait for a given amount of time until ready to check for output line
+
+    time.sleep(5) # Give node enough time to start
+    jobIDs = get_jobIDs()
+    build_job_list(jobIDs)
     
+    # TODO SHOULD I RUN THIS ASYNC?
+    # TODO convert this into a function to run ASYNC?
+    for library in list_of_jobs:
+        started = check_for_start(library)
+        while not(check_for_combine(library)):
+            time.sleep(60)
+            # TODO is waiting for time the best approach here?
+
+
+def build_job_list(jobs):
+    """
+    Purpose:
+        Build a library dictionary for every job assigned to plato.
+    Pre-cond:
+        :param jobs: List of jobIDs provided by get_jobIDs() function
+    Return:
+        list_of_jobs will be appended to contain all library information
+    """
+    for jobID in jobs:
+        job_info = {}
+        job_info["jobID"] = jobID
+        job_info["slurm"] = f"slurm-{jobID}.out"
+        job_info["lib_ID"] = ""
+        # Booleans to track when steps are complete
+        job_info["start"] = False
+        job_info["done_combining"] = False
+        job_info["read1_counts"] = 0
+        job_info["read2_counts"] = 0
+        job_info["done_fastp"] = False
+        job_info["done_STAR"] = False
+        job_info["done_sbatch_job1"] = False
+        list_of_jobs.append(job_info)
+
 def get_jobIDs():
     """
     Purpose:
-        Obtain a list of all active jobIDs from "pipe_RNA" runs on sbatch nodes
+        Obtain a list of all active jobIDs from "NGSF_RNA" runs on sbatch nodes
     Return:
         List of jobIDs active on the compute cluster
     """
-    queue = subprocess.run(["squeue", "-n", "pipe_RNA"], capture_output=True)
+    queue = subprocess.run(["squeue", "-n", "NGSF_RNA"], capture_output=True)
     jobIDs = []
     for line in queue.stdout.splitlines():
         steps = (str(line).split())
@@ -71,9 +104,60 @@ def get_jobIDs():
             jobIDs.append(str(steps[1]))
     return jobIDs
 
-def check_for_completion(jobID):
-    # use egrep to search for "#NGSF-end", and then return True if found
-    pass
+
+def cancel_all_runs():
+    """
+    Purpose:
+        If the RNA-seq fails, this will cancel every batch run.
+    Return:
+        Cancels every batch run.
+        Kills python script.
+        - Untested
+    """
+    for job in list_of_jobs:
+        subprocess.run(["scancel", job["jobID"]])
+    exit()
+
+
+def check_for_start(library):
+    """
+    Purpose:
+        Checks to ensure node started correctly
+    Returns:
+        True if node started correctly.
+        Cancels script otherwise.
+    """
+    if checks.start(library["slurm"]):
+        library["start"] = True
+        library["lib_ID"] = checks.library(library["slurm"])
+        return True
+    else:
+        print(f"Library failed to start properly.")
+        cancel_all_runs()
+
+def check_for_combine(library):
+    """
+    Purpose:
+        Checks to four lanes of data were combined into one file. 
+    Returns:
+        True if data has been combined
+        False otherwise.
+    """
+    # TODO how do I check to see if combine failed?
+    if checks.combined(library["slurm"]):
+        library["read1_counts"] = checks.read1(library["slurm"])
+        library["read2_counts"] = checks.read2(library["slurm"])
+        return True
+    else:
+        return False
+
+def check_for_completion(library):
+    started = checks.start(library["slurm"])
+    if started:
+        library["start"] = True
+    else:
+        pass
+        # print(f"{library[")
 
 def main():
     args = get_args()
