@@ -5,7 +5,7 @@
 # Uses fastp to trim and QC reads
 # Aligns to indexed genome using STAR
 
-#SBATCH --job-name=pipe_RNA
+#SBATCH --job-name="NGSF_RNA"
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --time=0:5:00
@@ -19,7 +19,13 @@ raw_data_files=$2
 
 NGSF_tag="#NGSF"
 
-echo "$NGSF_tag JOBID $SLURM_JOBID"
+# Will echo changes when steps are completed
+echo "$NGSF_tag-START True"
+echo "$NGSF_tag-LIB $library"
+echo "$NGSF_tag-COMBINED False"
+echo "$NGSF_tag-FASTP False"
+echo "$NGSF_tag-STAR False"
+echo "$NGSF_tag-SBATCH False"
 
 # activate python and then create virtual env
 module load python/3.8.10
@@ -32,13 +38,16 @@ echo $(python -V)
 
 
 # Combine data from all four lanes
-echo "-== BEGIN COMBINING FOUR LANES OF NEXTSEQ DATA ==-"
+echo "$NGSF_tag -== BEGIN COMBINING FOUR LANES OF NEXTSEQ DATA ==-"
 cat ${raw_data_files}${library}_*_R1_* > ${SLURM_TMPDIR}/${library}_R1.fastq.gz
 cat ${raw_data_files}${library}_*_R2_* > ${SLURM_TMPDIR}/${library}_R2.fastq.gz
-echo "$NGSF_tag ${library} reads: R1: $(wc -l ${SLURM_TMPDIR}/${library}_R1.fastq.gz)"
-echo "$NGSF_tag ${library} reads: R2: $(wc -l ${SLURM_TMPDIR}/${library}_R2.fastq.gz)"
 
+echo "$NGSF_tag-R1 ${library} reads: R1: $(wc -l ${SLURM_TMPDIR}/${library}_R1.fastq.gz)"
+echo "$NGSF_tag-R2 ${library} reads: R2: $(wc -l ${SLURM_TMPDIR}/${library}_R2.fastq.gz)"
+echo "$NGSF_tag-COMBINED True"
 
+# Fastp analysis
+echo "$NGSF_tag -== BEGIN FASTP CHECK ==-"
 
 
 echo "$NGSF_tag-end -== COMPLETE ==-"

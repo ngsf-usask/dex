@@ -28,3 +28,10 @@ Created checks.py to contain all the checking scripst
 Main controller script will now begin checking as run continues
 -> Future work will be to move onto fastp and fastqc
 -> Long term work will be to figure out timing and async abilities of checking 
+
+Combine check updated
+- Checks for end of 4-lane comining step
+- Pulls read1 and read2 counts
+? Is time delay best way to recheck the code?
+? QC checks here?
+> Next to get fastp working

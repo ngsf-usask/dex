@@ -37,3 +37,4 @@ rsconnect/
 
 # vim swap files
 *.swp
+pipe_control/__pycache__/checks.cpython-38.pyc
