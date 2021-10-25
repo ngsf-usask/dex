@@ -35,3 +35,11 @@ Combine check updated
 ? Is time delay best way to recheck the code?
 ? QC checks here?
 > Next to get fastp working
+
+25Oct21
+Began trying to get fastp to work
+Will need to use wget to download and install everytime
+However fastqc is an available module. Will begin using this
+
+?Should we get fastp as an available module?
+? Fastqc seems to have less options available

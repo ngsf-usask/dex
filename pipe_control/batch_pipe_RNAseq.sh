@@ -8,7 +8,7 @@
 #SBATCH --job-name="NGSF_RNA"
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
-#SBATCH --time=0:5:00
+#SBATCH --time=0:10:00
 #SBATCH --mem=4G
 
 set -eux
@@ -46,8 +46,18 @@ echo "$NGSF_tag-R1 ${library} reads: R1: $(wc -l ${SLURM_TMPDIR}/${library}_R1.f
 echo "$NGSF_tag-R2 ${library} reads: R2: $(wc -l ${SLURM_TMPDIR}/${library}_R2.fastq.gz)"
 echo "$NGSF_tag-COMBINED True"
 
-# Fastp analysis
-echo "$NGSF_tag -== BEGIN FASTP CHECK ==-"
+# FASTP would have to be downloaded and installed every time. Is that worth it?
+# TODO Could ask Plato to add it is a module
+# Will move forward with Fastqc for time being
 
+
+# Fastqc analysis
+echo "$NGSF_tag -== BEGIN FASTQC CHECK ==-"
+module load fastqc/0.11.9
+echo $(fastqc -v)
+fastqc -t $THREADS ${SLURM_TMPDIR}/*.fastq.gz
+#output includes fastqc.zip and fastqc.html 
+# TODO move only html out
+echo "$NGSF_tag-fastqc True"
 
 echo "$NGSF_tag-end -== COMPLETE ==-"

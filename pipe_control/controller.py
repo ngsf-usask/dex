@@ -52,7 +52,7 @@ def call_batch_runs(lib_file, genome_file):
         subprocess.run(["sbatch", "./batch_pipe_RNAseq.sh",  library.strip(), paths[0]])
 
 
-    time.sleep(5) # Give node enough time to start
+    time.sleep(5) # Give nodes enough time to start
     jobIDs = get_jobIDs()
     build_job_list(jobIDs)
     
