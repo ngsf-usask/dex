@@ -35,7 +35,6 @@ def combined(slurm_file):
         True if slurm output contains a COMBINED statement.
     """
     stdout = subprocess.run(["grep", "^#NGSF-COMBINED", slurm_file], capture_output=True).stdout.decode("utf-8")
-    print(stdout)
     return True if "True" in stdout else False
 
 def read1(slurm_file):

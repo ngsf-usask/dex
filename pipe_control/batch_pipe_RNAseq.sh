@@ -46,18 +46,36 @@ echo "$NGSF_tag-R1 ${library} reads: R1: $(wc -l ${SLURM_TMPDIR}/${library}_R1.f
 echo "$NGSF_tag-R2 ${library} reads: R2: $(wc -l ${SLURM_TMPDIR}/${library}_R2.fastq.gz)"
 echo "$NGSF_tag-COMBINED True"
 
-# FASTP would have to be downloaded and installed every time. Is that worth it?
-# TODO Could ask Plato to add it is a module
-# Will move forward with Fastqc for time being
+
+# Copy fastp from datastore onto node, provide permissions, and run
+cp /datastore/NGSF001/software/bin/fastp ${SLURM_TMPDIR}
+chmod u+x ${SLURM_TMPDIR}/fastp
+ls -l
 
 
-# Fastqc analysis
-echo "$NGSF_tag -== BEGIN FASTQC CHECK ==-"
-module load fastqc/0.11.9
-echo $(fastqc -v)
-fastqc -t $THREADS ${SLURM_TMPDIR}/*.fastq.gz
-#output includes fastqc.zip and fastqc.html 
-# TODO move only html out
-echo "$NGSF_tag-fastqc True"
+${SLURM_TMPDIR}/fastp --in1 {SLURM_TMPDIR}/${library}_R1.fastq.gz \
+    --in2 {SLURM_TMPDIR}/${library}_R2.fastq.gz \
+    --out1 ${library}_R1_trimmed.fastq.gz \
+    --out2 ${library}_R2_trimmed.fastq.gz \
+    --unpaired1 ${library}_R1_trimmed_unpaired.fastq.gz \
+    --unpaired2 ${library}_R2_trimmed_unpaired.fastq.gz \
+    -V \
+    -l 30 \
+    -p \
+    -w $THREADS \
+    -j ${library}.trim-report.json \
+    -h ${library}.trim-report.html \
+    -e 10 \
+    -q 10 \
+    -M 10 \
+    -r \
+    -W 6 \
+    -g
+
+
+# Move all the report documents out
+# TODO create a new folder from these
+mv *.json $OUTDIR
+mv *.html $OUTDIR
 
 echo "$NGSF_tag-end -== COMPLETE ==-"

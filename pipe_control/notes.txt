@@ -43,3 +43,10 @@ However fastqc is an available module. Will begin using this
 
 ?Should we get fastp as an available module?
 ? Fastqc seems to have less options available
+
+26Oct21
+Austin suggested copying fastp from datastore onto every node.
+batch_pipe_RNAseq script now does that properly.
+
+- Need to confirm that it functions properly.
+- Need to confirm that report files are output

@@ -60,7 +60,9 @@ def call_batch_runs(lib_file, genome_file):
     # TODO convert this into a function to run ASYNC?
     for library in list_of_jobs:
         started = check_for_start(library)
+        print(f"Run has started for {library['lib_ID']}")
         while not(check_for_combine(library)):
+            print(f"Checking for when lane combining has finished for {library['lib_ID']}")
             time.sleep(60)
             # TODO is waiting for time the best approach here?
 
