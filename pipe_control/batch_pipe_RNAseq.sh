@@ -8,8 +8,8 @@
 #SBATCH --job-name="NGSF_RNA"
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
-#SBATCH --time=0:10:00
-#SBATCH --mem=4G
+#SBATCH --time=0:30:00
+#SBATCH --mem=8G
 
 set -eux
 
@@ -33,7 +33,7 @@ module load python/3.8.10
 virtualenv --no-download $SLURM_TMPDIR/env
 source $SLURM_TMPDIR/env/bin/activate
 pip install --no-index --upgrade pip
-pip install --no-index -r requirements.txt # TODO MAY NEED TO ADJUST PATH IN FUTURE
+pip install --no-index -r ~/cluster/pipe_RNA/pipe_control/requirements.txt # TODO MAY NEED TO ADJUST PATH IN FUTURE
 echo $(python -V)
 
 
@@ -52,9 +52,8 @@ cp /datastore/NGSF001/software/bin/fastp ${SLURM_TMPDIR}
 chmod u+x ${SLURM_TMPDIR}/fastp
 ls -l
 
-
-${SLURM_TMPDIR}/fastp --in1 {SLURM_TMPDIR}/${library}_R1.fastq.gz \
-    --in2 {SLURM_TMPDIR}/${library}_R2.fastq.gz \
+${SLURM_TMPDIR}/fastp --in1 ${SLURM_TMPDIR}/${library}_R1.fastq.gz \
+    --in2 ${SLURM_TMPDIR}/${library}_R2.fastq.gz \
     --out1 ${library}_R1_trimmed.fastq.gz \
     --out2 ${library}_R2_trimmed.fastq.gz \
     --unpaired1 ${library}_R1_trimmed_unpaired.fastq.gz \
@@ -72,10 +71,11 @@ ${SLURM_TMPDIR}/fastp --in1 {SLURM_TMPDIR}/${library}_R1.fastq.gz \
     -W 6 \
     -g
 
+echo "$NGSF_tag-FASTP True"
 
-# Move all the report documents out
-# TODO create a new folder from these
-mv *.json $OUTDIR
-mv *.html $OUTDIR
+mv *.json $OUTDIR/logs/
+mv *.html $OUTDIR/logs/
+
+
 
 echo "$NGSF_tag-end -== COMPLETE ==-"
