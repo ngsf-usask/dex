@@ -4,6 +4,7 @@ import argparse
 import subprocess
 import time
 import checks
+import os
 
 """
 This script will control the data pipeline for RNA seq data.
@@ -23,6 +24,7 @@ list_of_jobs = [] # Keeps all job information in dictionaries
 
 
 # TODO : build a function to check the arguments
+# TODO : update pathways for final script to match datastore?
 
 def get_args():
     """
@@ -33,6 +35,7 @@ def get_args():
             .libraries = file name for .txt containing library IDs
             .genomics = file name for .txt containing following information:
                         [Line 1]: Absolute path to raw data directory
+                        [Line 2]: Absolute path to genome index
     """
     parser = argparse.ArgumentParser(
         description="Process raw nextSeq RNA-seq results")
@@ -40,6 +43,16 @@ def get_args():
     parser.add_argument("genomics", help="txt file where first line is absolute path to raw data")
     arguments = parser.parse_args()
     return arguments
+
+def directory_setup():
+    """
+    Purpose:
+        Create all directories for data output where script was called.
+    Return:
+        Creates directories at location script was called.
+    """
+    subprocess.run(["mkdir", "logs"])
+
 
 def call_batch_runs(lib_file, genome_file):
     gen_file = open(genome_file, "r")
@@ -49,11 +62,14 @@ def call_batch_runs(lib_file, genome_file):
 
     in_file = open(lib_file, "r")
     for library in in_file:
-        subprocess.run(["sbatch", "./batch_pipe_RNAseq.sh",  library.strip(), paths[0]])
+        print(os.getcwd())
+        print(__file__) # can be used to find batch_pipe
+        subprocess.run(["sbatch", "/globalhome/arb594/HPC/cluster/pipe_RNA/pipe_control/batch_pipe_RNAseq.sh",  library.strip(), paths[0], paths[1]])
 
 
     time.sleep(5) # Give nodes enough time to start
     jobIDs = get_jobIDs()
+    print(jobIDs)
     build_job_list(jobIDs)
     
     # TODO SHOULD I RUN THIS ASYNC?
@@ -61,11 +77,24 @@ def call_batch_runs(lib_file, genome_file):
     for library in list_of_jobs:
         started = check_for_start(library)
         print(f"Run has started for {library['lib_ID']}")
+        print(f"Combining lanes for {library['lib_ID']}")
         while not(check_for_combine(library)):
             print(f"Checking for when lane combining has finished for {library['lib_ID']}")
             time.sleep(60)
             # TODO is waiting for time the best approach here?
+        
+        print(f"Starting fastp for {library['lib_ID']}")
+        while not(check_for_fastp(library)):
+            print(f"Checking for fastp completion for {library['lib_ID']}")
+            time.sleep(60)
 
+        print(f"Starting STAR for {library['lib_ID']}")
+        while not(check_for_star(library)):
+            print(f"Checking for STAR completion for {library['lib_ID']}")
+            time.sleep(60)
+        print(library)
+
+        # TODO add check for STAR
 
 def build_job_list(jobs):
     """
@@ -98,7 +127,20 @@ def get_jobIDs():
     Return:
         List of jobIDs active on the compute cluster
     """
-    queue = subprocess.run(["squeue", "-n", "NGSF_RNA"], capture_output=True)
+    # Assume that there are pending jobs
+    pending = True
+    while pending:
+        pending_list = subprocess.run(["squeue", "--start"], capture_output=True).stdout.decode("utf-8")
+        if "NGSF_RNA" in pending_list:
+            # If NGSF_RNA jobs are pending, pause for 30s before rechecking
+            print("Jobs are pending.")
+            time.sleep(30)
+        else:
+            queue = subprocess.run(["squeue", "-n", "NGSF_RNA"], capture_output=True)
+            print("All jobs are actively running.")
+            pending = False
+
+    # Go through each job and pull the jobID
     jobIDs = []
     for line in queue.stdout.splitlines():
         steps = (str(line).split())
@@ -119,7 +161,6 @@ def cancel_all_runs():
     for job in list_of_jobs:
         subprocess.run(["scancel", job["jobID"]])
     exit()
-
 
 def check_for_start(library):
     """
@@ -153,16 +194,40 @@ def check_for_combine(library):
     else:
         return False
 
-def check_for_completion(library):
-    started = checks.start(library["slurm"])
-    if started:
-        library["start"] = True
+def check_for_fastp(library):
+    """
+    Purpose:
+        Checks to see completion of fastp. 
+    Returns:
+        True if data has been combined
+        False otherwise.
+    """
+    if checks.fastp(library["slurm"]):
+        library["done_fastp"] = True
+        return True
     else:
-        pass
-        # print(f"{library[")
+        return False
+
+def check_for_star(library):
+    """
+    Purpose:
+        Checks to see completion of STAR. 
+    Returns:
+        True if STAR has been combined
+        False otherwise.
+    """
+    if checks.star(library["slurm"]):
+        library["done_fastp"] = True
+        return True
+    else:
+        return False
+
+def check_for_completion(library):
+    pass
 
 def main():
     args = get_args()
+    directory_setup()
     call_batch_runs(args.libraries, args.genomics)
 
 if __name__ == "__main__":

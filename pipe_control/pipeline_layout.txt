@@ -1,0 +1,77 @@
+
+call_batch_runs:
+    input:
+        -lib_file: .txt containing library IDs
+        -genomic_file: .txt containing genome info
+    function:
+        - run batch_pipe_RNAseq on node
+    {
+        combine_four_lanes:
+            {
+                input:
+                    - all four lanes of seq data
+                    ${raw_data_files}${library}_*_R1_*
+                    ${raw_data_files}${library}_*_R2_*
+                output:
+                    - combined seq data into single R1 and R2 files
+                    ${SLURM_TMPDIR}/${library}_R1.fastq.gz
+                    ${SLURM_TMPDIR}/${library}_R2.fastq.gz
+                checks:
+                    - when the combination starts
+                        - python print
+                        - "$NGSF_tag-COMBINED False"
+                    - while combination is working
+                        - python print at time intervals
+                        ? better way to check?
+                    - QC metrics
+                        - R1 and R2 counts 
+                            ? how to QC values?
+                    - when combination ends
+                        - python print
+                        - "$NGSF_tag-COMBINED True"
+            }
+        
+        fastp QC and trimming
+            {
+                input:
+                    - combined four lanes
+                    - ${SLURM_TMPDIR}/${library}_R1.fastq.gz
+                    - ${SLURM_TMPDIR}/${library}_R2.fastq.gz
+                checks:
+                    - when fastp starts
+                        - python print
+                    ? during run
+                        - print out progress?
+                    - when fastp finishes
+                        - "$NGSF_tag-FASTP True"
+                    - QC metrics
+                        - Scan through reports for important metrics
+                        - If metrics failed, then abort run?
+                output:
+                    - ${library}_R1_trimmed.fastq.gz
+                    - ${library}_R1_trimmed.fastq.gz
+                    - ${library}_R1_trimmed_unpaired.fastq.gz
+                    - ${library}_R1_trimmed_unpaired.fastq.gz
+                    - ${library}.trim-report.json
+                    - ${library}.trim-report.html
+            }
+
+        STAR
+            {
+                input:
+                    - Trimmed fastq files
+                    - ${library}_R1_trimmed.fastq.gz
+                    - ${library}_R2_trimmed.fastq.gz
+                    ? What to with unpaired, run again?
+                checks:
+                    - when STAR starts
+                    - when STAR ends
+                output:
+                    - all output into ${SLURM_TMPDIR}/${library}
+                    - rsync back to original folder
+            }
+    }
+    output:
+        - read numbers from combination function
+        - .json and .html from fastp
+        - Aligned. files from STAR

@@ -50,3 +50,13 @@ batch_pipe_RNAseq script now does that properly.
 
 - Need to confirm that it functions properly.
 - Need to confirm that report files are output
+
+Controller.py creates directories for data output
+Fastp accepts the fastq files, and produces the correct output! Seems to be working thus far
+
+WHAT TO DO WITH UNPAIRED?
+
+Sometimes when I run it assigns me the job number, but for an already existing job. i.e. 234050. Then my script fails immediately. Re-try and gives me 234052. Same pmb399 user. Again with 234053. 
+
+WORKING AT FINE TUNING THE PATHWAYS FOR STAR
+PENDING IS CANCELLING MY RUNS

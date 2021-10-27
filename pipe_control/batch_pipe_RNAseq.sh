@@ -8,14 +8,15 @@
 #SBATCH --job-name="NGSF_RNA"
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
-#SBATCH --time=0:30:00
-#SBATCH --mem=8G
+#SBATCH --time=0:50:00
+#SBATCH --mem=40G
 
 set -eux
 
 THREADS=4
 library=$1
 raw_data_files=$2
+index=$3
 
 NGSF_tag="#NGSF"
 
@@ -47,17 +48,15 @@ echo "$NGSF_tag-R2 ${library} reads: R2: $(wc -l ${SLURM_TMPDIR}/${library}_R2.f
 echo "$NGSF_tag-COMBINED True"
 
 
-# Copy fastp from datastore onto node, provide permissions, and run
-cp /datastore/NGSF001/software/bin/fastp ${SLURM_TMPDIR}
-chmod u+x ${SLURM_TMPDIR}/fastp
-ls -l
+# Activate fastp and run 
+module load fastp/0.20.1
 
-${SLURM_TMPDIR}/fastp --in1 ${SLURM_TMPDIR}/${library}_R1.fastq.gz \
+fastp --in1 ${SLURM_TMPDIR}/${library}_R1.fastq.gz \
     --in2 ${SLURM_TMPDIR}/${library}_R2.fastq.gz \
-    --out1 ${library}_R1_trimmed.fastq.gz \
-    --out2 ${library}_R2_trimmed.fastq.gz \
-    --unpaired1 ${library}_R1_trimmed_unpaired.fastq.gz \
-    --unpaired2 ${library}_R2_trimmed_unpaired.fastq.gz \
+    --out1 ${SLURM_TMPDIR}/${library}_R1_trimmed.fastq.gz \
+    --out2 ${SLURM_TMPDIR}/${library}_R2_trimmed.fastq.gz \
+    --unpaired1 ${SLURM_TMPDIR}/${library}_R1_trimmed_unpaired.fastq.gz \
+    --unpaired2 ${SLURM_TMPDIR}/${library}_R2_trimmed_unpaired.fastq.gz \
     -V \
     -l 30 \
     -p \
@@ -73,9 +72,44 @@ ${SLURM_TMPDIR}/fastp --in1 ${SLURM_TMPDIR}/${library}_R1.fastq.gz \
 
 echo "$NGSF_tag-FASTP True"
 
-mv *.json $OUTDIR/logs/
-mv *.html $OUTDIR/logs/
+# Create directory to store library output
+mkdir ${SLURM_TMPDIR}/${library}
 
+mv *.json ${SLURM_TMPDIR}/${library}
+mv *.html ${SLURM_TMPDIR}/${library}
 
+tree ${SLURM_TMPDIR}
+
+# Begin STAR analysis
+module load cellranger/2.1.0
+module load samtools/1.10
+
+PATH=/cvmfs/soft.computecanada.ca/easybuild/software/2020/Core/cellranger/2.1.0/STAR/5dda596/:$PATH
+
+# Move into library output so that output is automatically generated here
+ls -l
+cd ${SLURM_TMPDIR}/${library}
+ls -l
+
+STAR --runMode alignReads \
+    --runThreadN $THREADS \
+    --genomeDir $index \
+    --readFilesIn <(zcat ../${library}_R1_trimmed.fastq.gz) <(zcat ../${library}_R2_trimmed.fastq.gz) \
+    --outFilterType BySJout \
+    --outFilterMultimapNmax 20 \
+    --alignSJoverhangMin 8 \
+    --alignSJDBoverhangMin 1 \
+    --outFilterMismatchNmax 999 \
+    --outFilterMismatchNoverReadLmax 0.04 \
+    --alignIntronMin 20 \
+    --alignIntronMax 1000000 \
+    --alignMatesGapMax 1000000 \
+    --outSAMtype BAM SortedByCoordinate
+
+samtools index Aligned.sortedByCoord.out.bam
+
+rsync -rvz ${SLURM_TMPDIR}/${library} .
+
+echo "$NGSF_tag-STAR True"
 
 echo "$NGSF_tag-end -== COMPLETE ==-"

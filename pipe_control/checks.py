@@ -44,3 +44,11 @@ def read1(slurm_file):
 def read2(slurm_file):
     stdout = subprocess.run(["grep", "^#NGSF-R2", slurm_file], capture_output=True).stdout.splitlines()[0].decode("utf-8").split(" ")[-2]
     return stdout
+
+def fastp(slurm_file):
+    stdout = subprocess.run(["grep", "^#NGSF-FASTP", slurm_file], capture_output=True).stdout.decode("utf-8")
+    return True if "True" in stdout else False
+
+def star(slurm_file):
+    stdout = subprocess.run(["grep", "^#NGSF-STAR", slurm_file], capture_output=True).stdout.decode("utf-8")
+    return True if "True" in stdout else False
