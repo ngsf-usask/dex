@@ -17,11 +17,12 @@ THREADS=4
 library=$1
 raw_data_files=$2
 index=$3
+outdir=$4
 
 NGSF_tag="#NGSF"
 
 # Will echo changes when steps are completed
-echo "$NGSF_tag-START True"
+echo "$NGSF_tag-RUN True"
 echo "$NGSF_tag-LIB $library"
 echo "$NGSF_tag-COMBINED False"
 echo "$NGSF_tag-FASTP False"
@@ -78,8 +79,6 @@ mkdir ${SLURM_TMPDIR}/${library}
 mv *.json ${SLURM_TMPDIR}/${library}
 mv *.html ${SLURM_TMPDIR}/${library}
 
-tree ${SLURM_TMPDIR}
-
 # Begin STAR analysis
 module load cellranger/2.1.0
 module load samtools/1.10
@@ -87,9 +86,7 @@ module load samtools/1.10
 PATH=/cvmfs/soft.computecanada.ca/easybuild/software/2020/Core/cellranger/2.1.0/STAR/5dda596/:$PATH
 
 # Move into library output so that output is automatically generated here
-ls -l
 cd ${SLURM_TMPDIR}/${library}
-ls -l
 
 STAR --runMode alignReads \
     --runThreadN $THREADS \
@@ -108,7 +105,7 @@ STAR --runMode alignReads \
 
 samtools index Aligned.sortedByCoord.out.bam
 
-rsync -rvz ${SLURM_TMPDIR}/${library} .
+rsync -rvz ${SLURM_TMPDIR}/${library} $outdir
 
 echo "$NGSF_tag-STAR True"
 

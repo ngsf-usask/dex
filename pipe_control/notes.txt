@@ -91,3 +91,5 @@ Successfully completes the alignment on the node and returns all the results.
 Closed down the application during the run, and the node kept running. Not sure what that means for the Python script yet.
 
 Do I even need to create a python environment because everything is a module?
+Two libraries Successfully ran and transfered to a unique directory created each time. 
+Is VIRUTALENV necessary?

@@ -5,6 +5,7 @@ import subprocess
 import time
 import checks
 import os
+import datetime
 
 """
 This script will control the data pipeline for RNA seq data.
@@ -49,12 +50,16 @@ def directory_setup():
     Purpose:
         Create all directories for data output where script was called.
     Return:
-        Creates directories at location script was called.
+        Creates directories at location script was called, and returns path to directory.
     """
-    subprocess.run(["mkdir", "logs"])
+    now = datetime.datetime.now()
+    output_date = f"{now.hour:02d}{now.minute:02d}_{now.day:02d}{now.month:02d}{now.year:04d}"
+    subprocess.run(["mkdir", output_date])
+    output_dir = os.path.join(os.getcwd(), output_date)
+    print(output_dir) 
+    return output_dir
 
-
-def call_batch_runs(lib_file, genome_file):
+def call_batch_runs(lib_file, genome_file, outdir):
     gen_file = open(genome_file, "r")
     paths =[]
     for path in gen_file:
@@ -64,16 +69,17 @@ def call_batch_runs(lib_file, genome_file):
     for library in in_file:
         print(os.getcwd())
         print(__file__) # can be used to find batch_pipe
-        subprocess.run(["sbatch", "/globalhome/arb594/HPC/cluster/pipe_RNA/pipe_control/batch_pipe_RNAseq.sh",  library.strip(), paths[0], paths[1]])
-
+        subprocess.run(["sbatch", 
+                        "/globalhome/arb594/HPC/cluster/pipe_RNA/pipe_control/batch_pipe_RNAseq.sh",  
+                        library.strip(), 
+                        paths[0], 
+                        paths[1], 
+                        outdir])
 
     time.sleep(5) # Give nodes enough time to start
     jobIDs = get_jobIDs()
-    print(jobIDs)
     build_job_list(jobIDs)
     
-    # TODO SHOULD I RUN THIS ASYNC?
-    # TODO convert this into a function to run ASYNC?
     for library in list_of_jobs:
         started = check_for_start(library)
         print(f"Run has started for {library['lib_ID']}")
@@ -93,8 +99,6 @@ def call_batch_runs(lib_file, genome_file):
             print(f"Checking for STAR completion for {library['lib_ID']}")
             time.sleep(60)
         print(library)
-
-        # TODO add check for STAR
 
 def build_job_list(jobs):
     """
@@ -147,7 +151,6 @@ def get_jobIDs():
         if steps[1].isdigit():
             jobIDs.append(str(steps[1]))
     return jobIDs
-
 
 def cancel_all_runs():
     """
@@ -217,7 +220,7 @@ def check_for_star(library):
         False otherwise.
     """
     if checks.star(library["slurm"]):
-        library["done_fastp"] = True
+        library["done_STAR"] = True
         return True
     else:
         return False
@@ -227,8 +230,8 @@ def check_for_completion(library):
 
 def main():
     args = get_args()
-    directory_setup()
-    call_batch_runs(args.libraries, args.genomics)
+    outdir = directory_setup()
+    call_batch_runs(args.libraries, args.genomics, outdir)
 
 if __name__ == "__main__":
     main()

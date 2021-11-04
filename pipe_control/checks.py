@@ -13,7 +13,7 @@ def start(slurm_file):
     Return:
         True if slurm output contains a START statement.
     """
-    stdout = subprocess.run(["grep", "^#NGSF-START", slurm_file], capture_output=True).stdout.decode("utf-8")
+    stdout = subprocess.run(["grep", "^#NGSF-RUN", slurm_file], capture_output=True).stdout.decode("utf-8")
     return True if "True" in stdout else False
 
 
