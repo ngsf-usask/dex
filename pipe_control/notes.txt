@@ -60,3 +60,34 @@ Sometimes when I run it assigns me the job number, but for an already existing j
 
 WORKING AT FINE TUNING THE PATHWAYS FOR STAR
 PENDING IS CANCELLING MY RUNS
+
+
+27Oct21
+Fastp is a cluster-specific module
+> Now loads module rather than copying application from datastore
+
+If a run is pending, it does not create a slurm.out. Therefore when it tries to confirm the run has started by looking at the slurm.out, then the run fails and cancels. To get around this, I need to check for pending.
+Changes to get_jobIDs()
+Use squeue to checking for any pending jobs with NGSF_RNA name. Waits until all runs have started before getting jobIDs. 
+
+29Oct21
+Script runs completely through STAR and outputs correct files.
+However files are not rsynced back to the correct area. In fact, I don't know where they end up.
+? How to adjust the path for the files to be sent back to the directory where the controller.py was called?
+? os.getcwd() passed into batch_pipe_RNAseq?
+? Do I add library IDs to the outputfiles? Like R2100207_Aligned.sortedbyCoord.bam.out
+
+? Output directory should change each call to prevent clobber
+
+02Nov21
+Adding outdir passing into the batch script by using os.getcwd()
+? Need to figure that outdir clobber issue - use a time or jobID? or a job name? but needed to change to pass?
+
+? The next question is what happens to a job that finishes while python script is cancelled? Need the computer still be run.
+
+04Nov21
+
+Successfully completes the alignment on the node and returns all the results.
+Closed down the application during the run, and the node kept running. Not sure what that means for the Python script yet.
+
+Do I even need to create a python environment because everything is a module?
