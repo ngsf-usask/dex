@@ -62,8 +62,8 @@ fastp --in1 ${SLURM_TMPDIR}/${library}_R1.fastq.gz \
     -l 30 \
     -p \
     -w $THREADS \
-    -j ${library}.trim-report.json \
-    -h ${library}.trim-report.html \
+    -j ${library}.trim-report.fastp.json \
+    -h ${library}.trim-report.fastp.html \
     -e 10 \
     -q 10 \
     -M 10 \

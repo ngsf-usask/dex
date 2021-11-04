@@ -232,6 +232,7 @@ def main():
     args = get_args()
     outdir = directory_setup()
     call_batch_runs(args.libraries, args.genomics, outdir)
+    subprocess.run(["multiqc", outdir])
 
 if __name__ == "__main__":
     main()
