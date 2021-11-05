@@ -52,3 +52,7 @@ def fastp(slurm_file):
 def star(slurm_file):
     stdout = subprocess.run(["grep", "^#NGSF-STAR", slurm_file], capture_output=True).stdout.decode("utf-8")
     return True if "True" in stdout else False
+
+def htseq(slurm_file):
+    stdout = subprocess.run(["grep", "^#NGSF-HTSEQ", slurm_file], capture_output=True).stdout.decode("utf-8")
+    return True if "True" in stdout else False

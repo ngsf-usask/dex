@@ -93,3 +93,54 @@ Closed down the application during the run, and the node kept running. Not sure 
 Do I even need to create a python environment because everything is a module?
 Two libraries Successfully ran and transfered to a unique directory created each time. 
 Is VIRUTALENV necessary?
+
+
+05Nov21
+Working on adding htseq functionality to the pipeline. Htseq was installed using pip on an empty venv (py3.8.5).
+Error keeps coming up
+$ htseq-count
+Traceback (most recent call last):
+  File "/globalhome/arb594/HPC/cluster/pipe_RNA/pipe_control/htseq_batch/lib/python3.8/site-packages/numpy/core/__init__.py", line 22, in <module>
+    from . import multiarray
+  File "/globalhome/arb594/HPC/cluster/pipe_RNA/pipe_control/htseq_batch/lib/python3.8/site-packages/numpy/core/multiarray.py", line 12, in <module>
+    from . import overrides
+  File "/globalhome/arb594/HPC/cluster/pipe_RNA/pipe_control/htseq_batch/lib/python3.8/site-packages/numpy/core/overrides.py", line 7, in <module>
+    from numpy.core._multiarray_umath import (
+ImportError: libgfortran.so.5: cannot open shared object file: No such file or directory
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/globalhome/arb594/HPC/cluster/pipe_RNA/pipe_control/htseq_batch/bin/htseq-count", line 3, in <module>
+    import HTSeq.scripts.count
+  File "/globalhome/arb594/HPC/cluster/pipe_RNA/pipe_control/htseq_batch/lib/python3.8/site-packages/HTSeq/__init__.py", line 13, in <module>
+    from HTSeq._HTSeq import *
+  File "src/HTSeq/_HTSeq.pyx", line 1, in init HTSeq._HTSeq
+  File "/globalhome/arb594/HPC/cluster/pipe_RNA/pipe_control/htseq_batch/lib/python3.8/site-packages/numpy/__init__.py", line 150, in <module>
+    from . import core
+  File "/globalhome/arb594/HPC/cluster/pipe_RNA/pipe_control/htseq_batch/lib/python3.8/site-packages/numpy/core/__init__.py", line 48, in <module>
+    raise ImportError(msg)
+ImportError: 
+
+IMPORTANT: PLEASE READ THIS FOR ADVICE ON HOW TO SOLVE THIS ISSUE!
+
+Importing the numpy C-extensions failed. This error can happen for
+many reasons, often due to issues with your setup or how NumPy was
+installed.
+
+We have compiled some common reasons and troubleshooting tips at:
+
+    https://numpy.org/devdocs/user/troubleshooting-importerror.html
+
+Please note and check the following:
+
+  * The Python version is: Python3.8 from "/globalhome/arb594/HPC/cluster/pipe_RNA/pipe_control/htseq_batch/bin/python"
+  * The NumPy version is: "1.21.2"
+
+and make sure that they are the versions you expect.
+Please carefully study the documentation linked above for further help.
+
+Original error was: libgfortran.so.5: cannot open shared object file: No such file or directory
+
+htseq count runs on the node for some reasons
+what gtf to use

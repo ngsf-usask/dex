@@ -18,6 +18,7 @@ library=$1
 raw_data_files=$2
 index=$3
 outdir=$4
+gtf=$5
 
 NGSF_tag="#NGSF"
 
@@ -27,25 +28,27 @@ echo "$NGSF_tag-LIB $library"
 echo "$NGSF_tag-COMBINED False"
 echo "$NGSF_tag-FASTP False"
 echo "$NGSF_tag-STAR False"
+echo "$NGSF_tag-HTSEQ False"
 echo "$NGSF_tag-SBATCH False"
 
 # activate python and then create virtual env
 module load python/3.8.10
 # virtual_env_path=/cluster/pipe_RNA/pipe_control/requirements.txt
-virtualenv --no-download $SLURM_TMPDIR/env
-source $SLURM_TMPDIR/env/bin/activate
+virtualenv --no-download ${SLURM_TMPDIR}/env
+source ${SLURM_TMPDIR}/env/bin/activate
 pip install --no-index --upgrade pip
-pip install --no-index -r ~/cluster/pipe_RNA/pipe_control/requirements.txt # TODO MAY NEED TO ADJUST PATH IN FUTURE
+pip install --no-index -r ~/cluster/pipe_RNA/pipe_control/requirements_htseq.txt # TODO MAY NEED TO ADJUST PATH IN FUTURE
 echo $(python -V)
 
-
 # Combine data from all four lanes
+
 echo "$NGSF_tag -== BEGIN COMBINING FOUR LANES OF NEXTSEQ DATA ==-"
 cat ${raw_data_files}${library}_*_R1_* > ${SLURM_TMPDIR}/${library}_R1.fastq.gz
 cat ${raw_data_files}${library}_*_R2_* > ${SLURM_TMPDIR}/${library}_R2.fastq.gz
 
 echo "$NGSF_tag-R1 ${library} reads: R1: $(wc -l ${SLURM_TMPDIR}/${library}_R1.fastq.gz)"
 echo "$NGSF_tag-R2 ${library} reads: R2: $(wc -l ${SLURM_TMPDIR}/${library}_R2.fastq.gz)"
+
 echo "$NGSF_tag-COMBINED True"
 
 
@@ -105,8 +108,21 @@ STAR --runMode alignReads \
 
 samtools index Aligned.sortedByCoord.out.bam
 
-rsync -rvz ${SLURM_TMPDIR}/${library} $outdir
+# rsync -rvz ${SLURM_TMPDIR}/${library} $outdir
 
 echo "$NGSF_tag-STAR True"
+
+htseq-count -f bam \
+    -r pos \
+    -s reverse \
+    -m union \
+    --nonunique all \
+    Aligned.sortedByCoord.out.bam \
+    $gtf > ${library}.counts.htseq.txt
+
+
+echo "$NGSF_tag-HTSEQ True"
+
+rsync -rvz ${SLURM_TMPDIR}/${library} $outdir
 
 echo "$NGSF_tag-end -== COMPLETE ==-"

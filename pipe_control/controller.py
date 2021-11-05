@@ -37,6 +37,7 @@ def get_args():
             .genomics = file name for .txt containing following information:
                         [Line 1]: Absolute path to raw data directory
                         [Line 2]: Absolute path to genome index
+                        [Line 2]: Absolute path to gtf ref
     """
     parser = argparse.ArgumentParser(
         description="Process raw nextSeq RNA-seq results")
@@ -60,6 +61,19 @@ def directory_setup():
     return output_dir
 
 def call_batch_runs(lib_file, genome_file, outdir):
+    """
+    Purpose:
+        Runs lane combination, fastp, and STAR on a sbatch  node. Will continually check for progress and update libraries in .list_of_job attribute.
+    Precond:
+        :param lib_file: txt file containing libraries described in get_args()
+        :param genome_file: txt file containing pathways described in get_args()
+        :param outdir: Directory to which output files should be placed
+    Return:
+        Calls on #nodes for #libraries provided in lib_file.
+        Will print to console as progresses
+        TODO : MAKE PRINT TO LOG FILE ??
+        Output and log files from fastp and STAR will be transfered to outdir from plato node.
+    """
     gen_file = open(genome_file, "r")
     paths =[]
     for path in gen_file:
@@ -74,11 +88,16 @@ def call_batch_runs(lib_file, genome_file, outdir):
                         library.strip(), 
                         paths[0], 
                         paths[1], 
-                        outdir])
+                        outdir,
+                        paths[2]])
 
     time.sleep(5) # Give nodes enough time to start
     jobIDs = get_jobIDs()
+
+    if not jobIDs:
+        print("No jobIDs were found.")
     build_job_list(jobIDs)
+
     
     for library in list_of_jobs:
         started = check_for_start(library)
@@ -97,6 +116,11 @@ def call_batch_runs(lib_file, genome_file, outdir):
         print(f"Starting STAR for {library['lib_ID']}")
         while not(check_for_star(library)):
             print(f"Checking for STAR completion for {library['lib_ID']}")
+            time.sleep(60)
+
+        print(f"Starting HTSeq for {library['lib_ID']}")
+        while not(check_for_htseq(library)):
+            print(f"Checking for HTseq completion for {library['lib_ID']}")
             time.sleep(60)
         print(library)
 
@@ -121,6 +145,7 @@ def build_job_list(jobs):
         job_info["read2_counts"] = 0
         job_info["done_fastp"] = False
         job_info["done_STAR"] = False
+        job_info["done_HTSEQ"] = False
         job_info["done_sbatch_job1"] = False
         list_of_jobs.append(job_info)
 
@@ -225,6 +250,21 @@ def check_for_star(library):
     else:
         return False
 
+
+def check_for_htseq(library):
+    """
+    Purpose:
+        Checks to see completion of HTseq. 
+    Returns:
+        True if HTSeq has been combined
+        False otherwise.
+    """
+    if checks.htseq(library["slurm"]):
+        library["done_HTSEQ"] = True
+        return True
+    else:
+        return False
+
 def check_for_completion(library):
     pass
 
@@ -232,7 +272,8 @@ def main():
     args = get_args()
     outdir = directory_setup()
     call_batch_runs(args.libraries, args.genomics, outdir)
-    subprocess.run(["multiqc", outdir])
+    # subprocess.run(["multiqc", outdir])
+    # TODO have a check function here to make sure data is high quality before proceeding
 
 if __name__ == "__main__":
     main()
