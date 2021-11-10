@@ -54,7 +54,7 @@ def directory_setup():
         Creates directories at location script was called, and returns path to directory.
     """
     now = datetime.datetime.now()
-    output_date = f"{now.hour:02d}{now.minute:02d}_{now.day:02d}{now.month:02d}{now.year:04d}"
+    output_date = f"{now.day:02d}{now.month:02d}{now.year:04d}_{now.hour:02d}{now.minute:02d}"
     subprocess.run(["mkdir", output_date])
     output_dir = os.path.join(os.getcwd(), output_date)
     print(output_dir) 
@@ -119,8 +119,11 @@ def call_batch_runs(lib_file, genome_file, outdir):
             time.sleep(60)
 
         print(f"Starting HTSeq for {library['lib_ID']}")
+        ht_count = 0
         while not(check_for_htseq(library)):
             print(f"Checking for HTseq completion for {library['lib_ID']}")
+            print(f"{ht_count}:min")
+            ht_count +=1
             time.sleep(60)
         print(library)
 
@@ -272,7 +275,7 @@ def main():
     args = get_args()
     outdir = directory_setup()
     call_batch_runs(args.libraries, args.genomics, outdir)
-    # subprocess.run(["multiqc", outdir])
+    subprocess.run(["multiqc", outdir])
     # TODO have a check function here to make sure data is high quality before proceeding
 
 if __name__ == "__main__":

@@ -144,3 +144,16 @@ Original error was: libgfortran.so.5: cannot open shared object file: No such fi
 
 htseq count runs on the node for some reasons
 what gtf to use
+
+
+08Nov21
+
+52mil reads
+What time to use?
+Lane combine = 2min
+Fastp = 10min
+STAR = 20min
+HTSeq = 60min
+
+Adjusting time of batch run to 2h, but tracking HTseq time
+? Will need a way to adjust for time reservations in the future?
