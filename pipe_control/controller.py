@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
 import argparse
+import json
 import subprocess
 import time
 import checks
 import os
 import datetime
+from json import load
 
 """
 This script will control the data pipeline for RNA seq data.
@@ -34,15 +36,15 @@ def get_args():
     Return:
         Object where parameters contain string information from command line.
             .libraries = file name for .txt containing library IDs
-            .genomics = file name for .txt containing following information:
-                        [Line 1]: Absolute path to raw data directory
-                        [Line 2]: Absolute path to genome index
-                        [Line 2]: Absolute path to gtf ref
+            .genomics = json file containing necessary pathways, and information on analyzing final results
+                        ['fastq'] : absolute path to raw Illumina sequences
+                        ['index'] : absolute path to index for STAR alignment
+                        ['gtf'] : absolute path to gtf file for htseq--count
     """
     parser = argparse.ArgumentParser(
         description="Process raw nextSeq RNA-seq results")
     parser.add_argument("libraries", help="txt file where each line is a library ID")
-    parser.add_argument("genomics", help="txt file where first line is absolute path to raw data")
+    parser.add_argument("genomics", help="json file where first line is absolute path to raw data")
     arguments = parser.parse_args()
     return arguments
 
@@ -66,7 +68,7 @@ def call_batch_runs(lib_file, genome_file, outdir):
         Runs lane combination, fastp, and STAR on a sbatch  node. Will continually check for progress and update libraries in .list_of_job attribute.
     Precond:
         :param lib_file: txt file containing libraries described in get_args()
-        :param genome_file: txt file containing pathways described in get_args()
+        :param genome_file: json file containing pathways and details for data analysis
         :param outdir: Directory to which output files should be placed
     Return:
         Calls on #nodes for #libraries provided in lib_file.
@@ -74,10 +76,13 @@ def call_batch_runs(lib_file, genome_file, outdir):
         TODO : MAKE PRINT TO LOG FILE ??
         Output and log files from fastp and STAR will be transfered to outdir from plato node.
     """
-    gen_file = open(genome_file, "r")
-    paths =[]
-    for path in gen_file:
-        paths.append(path.strip())
+
+    with open(genome_file, "r") as read_file:
+        paths = load(read_file)
+    # gen_file = open(genome_file, "r")
+    # paths =[]
+    # for path in gen_file:
+    #     paths.append(path.strip())
 
     in_file = open(lib_file, "r")
     for library in in_file:
@@ -86,10 +91,10 @@ def call_batch_runs(lib_file, genome_file, outdir):
         subprocess.run(["sbatch", 
                         "/globalhome/arb594/HPC/cluster/pipe_RNA/pipe_control/batch_pipe_RNAseq.sh",  
                         library.strip(), 
-                        paths[0], 
-                        paths[1], 
+                        paths['fastq'], 
+                        paths['index'], 
                         outdir,
-                        paths[2]])
+                        paths['gtf']])
 
     time.sleep(5) # Give nodes enough time to start
     jobIDs = get_jobIDs()
