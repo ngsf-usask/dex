@@ -8,7 +8,7 @@
 #SBATCH --job-name="NGSF_RNA"
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
-#SBATCH --time=2:00:00
+#SBATCH --time=1:00:00
 #SBATCH --mem=40G
 
 set -eux

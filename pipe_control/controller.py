@@ -277,6 +277,9 @@ def check_for_htseq(library):
 def check_for_completion(library):
     pass
 
+def call_analysis():
+    pass
+
 def main():
     args = get_args()
     outdir = directory_setup()

@@ -157,3 +157,17 @@ HTSeq = 60min
 
 Adjusting time of batch run to 2h, but tracking HTseq time
 ? Will need a way to adjust for time reservations in the future?
+
+26Nov21
+Working on deseq2_htseq.R script incorpation.
+
+Use /datastore/NGSF001/projects/21-1ELSI-001/dge as template for sample and condition files
+Lines 53, 54, 56, and 60 need to be manually edited in each experiment
+Include a method to add this data to .json, have python convert to text for .R, and then delete those files afterwards
+
+Current directory structure has each library in one directory
+May need to modify that so make .R script run on all htseq.count documents in a single directory.
+_data
+|__R2100027
+_stats
+|__htseq
