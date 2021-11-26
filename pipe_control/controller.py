@@ -43,6 +43,7 @@ def get_args():
     """
     parser = argparse.ArgumentParser(
         description="Process raw nextSeq RNA-seq results")
+    parser.add_argument("--analysis", action="store_true", help="True if alignment is already done, and now redoing analysis on data")
     parser.add_argument("libraries", help="txt file where each line is a library ID")
     parser.add_argument("genomics", help="json file where first line is absolute path to raw data")
     arguments = parser.parse_args()
@@ -279,9 +280,11 @@ def check_for_completion(library):
 def main():
     args = get_args()
     outdir = directory_setup()
-    call_batch_runs(args.libraries, args.genomics, outdir)
-    subprocess.run(["multiqc", outdir])
+    if not args.analysis:
+        call_batch_runs(args.libraries, args.genomics, outdir)
+        subprocess.run(["multiqc", outdir])
     # TODO have a check function here to make sure data is high quality before proceeding
+    print("Huh?")
 
 if __name__ == "__main__":
     main()
