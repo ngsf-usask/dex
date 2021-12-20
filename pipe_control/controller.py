@@ -24,7 +24,7 @@ Steps.
 """
 
 list_of_jobs = [] # Keeps all job information in dictionaries
-
+paths = [] # Keeps all pathways to files, and library information
 
 # TODO : build a function to check the arguments
 # TODO : update pathways for final script to match datastore?
@@ -35,7 +35,7 @@ def get_args():
         Obtain arguments from command line
     Return:
         Object where parameters contain string information from command line.
-            .libraries = file name for .txt containing library IDs
+            # .libraries = file name for .txt containing library IDs
             .genomics = json file containing necessary pathways, and information on analyzing final results
                         ['fastq'] : absolute path to raw Illumina sequences
                         ['index'] : absolute path to index for STAR alignment
@@ -44,9 +44,13 @@ def get_args():
     parser = argparse.ArgumentParser(
         description="Process raw nextSeq RNA-seq results")
     parser.add_argument("--analysis", action="store_true", help="True if alignment is already done, and now redoing analysis on data")
-    parser.add_argument("libraries", help="txt file where each line is a library ID")
+    # parser.add_argument("libraries", help="txt file where each line is a library ID")
     parser.add_argument("genomics", help="json file where first line is absolute path to raw data")
     arguments = parser.parse_args()
+
+    with open(genome_file, "r") as read_file:
+        paths = load(read_file)
+
     return arguments
 
 def directory_setup():
@@ -63,7 +67,7 @@ def directory_setup():
     print(output_dir) 
     return output_dir
 
-def call_batch_runs(lib_file, genome_file, outdir):
+def call_batch_runs(paths, outdir):
     """
     Purpose:
         Runs lane combination, fastp, and STAR on a sbatch  node. Will continually check for progress and update libraries in .list_of_job attribute.
@@ -78,15 +82,15 @@ def call_batch_runs(lib_file, genome_file, outdir):
         Output and log files from fastp and STAR will be transfered to outdir from plato node.
     """
 
-    with open(genome_file, "r") as read_file:
-        paths = load(read_file)
+    # with open(genome_file, "r") as read_file:
+    #     paths = load(read_file)
     # gen_file = open(genome_file, "r")
     # paths =[]
     # for path in gen_file:
     #     paths.append(path.strip())
 
     in_file = open(lib_file, "r")
-    for library in in_file:
+    for library in paths['samples']:
         print(os.getcwd())
         print(__file__) # can be used to find batch_pipe
         subprocess.run(["sbatch", 
@@ -259,7 +263,6 @@ def check_for_star(library):
     else:
         return False
 
-
 def check_for_htseq(library):
     """
     Purpose:
@@ -280,14 +283,29 @@ def check_for_completion(library):
 def call_analysis():
     pass
 
+def call_deseq2(conditions):
+    """
+    Purpose:
+
+    Precond:
+        :param conditions: A list of lists containing condition assignments 
+
+
+    """
+    pass
+
 def main():
     args = get_args()
     outdir = directory_setup()
     if not args.analysis:
-        call_batch_runs(args.libraries, args.genomics, outdir)
+        call_batch_runs(paths, outdir)
         subprocess.run(["multiqc", outdir])
     # TODO have a check function here to make sure data is high quality before proceeding
+    call_deseq2()
     print("Huh?")
+
+
+
 
 if __name__ == "__main__":
     main()

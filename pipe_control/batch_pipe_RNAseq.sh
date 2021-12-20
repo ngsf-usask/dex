@@ -123,6 +123,7 @@ htseq-count -f bam \
 
 echo "$NGSF_tag-HTSEQ True"
 
+# TODO SELECT WHICH FILES TO MOVE OVER TO THE OUTDIR 
 rsync -rvz ${SLURM_TMPDIR}/${library} $outdir
 
 echo "$NGSF_tag-end -== COMPLETE ==-"
