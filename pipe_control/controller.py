@@ -35,11 +35,12 @@ def get_args():
         Obtain arguments from command line
     Return:
         Object where parameters contain string information from command line.
-            # .libraries = file name for .txt containing library IDs
             .genomics = json file containing necessary pathways, and information on analyzing final results
                         ['fastq'] : absolute path to raw Illumina sequences
                         ['index'] : absolute path to index for STAR alignment
                         ['gtf'] : absolute path to gtf file for htseq--count
+                        ['samples'] : list of sample names
+                        ['conditions'] : deseq2 condition table
     """
     parser = argparse.ArgumentParser(
         description="Process raw nextSeq RNA-seq results")
@@ -47,10 +48,6 @@ def get_args():
     # parser.add_argument("libraries", help="txt file where each line is a library ID")
     parser.add_argument("genomics", help="json file where first line is absolute path to raw data")
     arguments = parser.parse_args()
-
-    with open(genome_file, "r") as read_file:
-        paths = load(read_file)
-
     return arguments
 
 def fresh_directory_setup():
@@ -61,7 +58,7 @@ def fresh_directory_setup():
         Creates directories at location script was called, and returns path to directory.
     """
     now = datetime.datetime.now()
-    output_date = f"{now.day:02d}{now.month:02d}{now.year:04d}_{now.hour:02d}{now.minute:02d}"
+    output_date = f"RNAseq_{now.day:02d}{now.month:02d}{now.year:04d}_{now.hour:02d}{now.minute:02d}"
     subprocess.run(["mkdir", output_date])
     output_dir = os.path.join(os.getcwd(), output_date)
     print(output_dir) 
@@ -79,7 +76,7 @@ def expression_directory_setup():
     print(f"Expression dir: {output_dir}") 
     return output_dir 
 
-def call_batch_runs(paths, outdir):
+def call_batch_runs(submit_file, outdir):
     """
     Purpose:
         Runs lane combination, fastp, and STAR on a sbatch  node. Will continually check for progress and update libraries in .list_of_job attribute.
@@ -93,16 +90,12 @@ def call_batch_runs(paths, outdir):
         TODO : MAKE PRINT TO LOG FILE ??
         Output and log files from fastp and STAR will be transfered to outdir from plato node.
     """
+    # Read submitted JSON file
+    with open(submit_file, "r") as read_file:
+        paths = load(read_file)
 
-    # with open(genome_file, "r") as read_file:
-    #     paths = load(read_file)
-    # gen_file = open(genome_file, "r")
-    # paths =[]
-    # for path in gen_file:
-    #     paths.append(path.strip())
-
-    in_file = open(lib_file, "r")
-    for library in paths['samples']:
+    # Call analysis for each library
+    for library in paths["samples"]:
         print(os.getcwd())
         print(__file__) # can be used to find batch_pipe
         subprocess.run(["sbatch", 
@@ -311,7 +304,7 @@ def main():
     if not args.analysis:
         # This is for a fresh data run. 
         outdir = fresh_directory_setup()
-        call_batch_runs(paths, outdir)
+        call_batch_runs(args.genomics, outdir)
         subprocess.run(["multiqc", outdir])
     # TODO have a check function here to make sure data is high quality before proceeding
     
