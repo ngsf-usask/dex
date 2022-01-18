@@ -171,3 +171,25 @@ _data
 |__R2100027
 _stats
 |__htseq
+
+
+20Dec21
+Modified so that all input data comes from the single json.
+Json data is processed in get_args() stored in global variable "paths". This data can now be accessed by call_bath_runs() and call_deseq2()
+
+Created analysis_directory_setup()
+Goal is to create a new folder within the run folder for "expression" analysis, while collapsing all the data into an "alignments" directory
+_alignments
+|__R2100027
+_expression
+|_whatever the deseq2_htseq output is
+
+
+22Dec21
+Installing rpy2 to port DEseq2 in conda environment "diffexpr"
+https://github.com/wckdouglas/diffexpr
+
+Need to download install files still
+
+23Dec21
+Install files located at /datastore/NGSF001/software/src/diffexpr/diffexpr-master

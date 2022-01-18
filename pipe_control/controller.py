@@ -53,7 +53,7 @@ def get_args():
 
     return arguments
 
-def directory_setup():
+def fresh_directory_setup():
     """
     Purpose:
         Create all directories for data output where script was called.
@@ -66,6 +66,18 @@ def directory_setup():
     output_dir = os.path.join(os.getcwd(), output_date)
     print(output_dir) 
     return output_dir
+
+def expression_directory_setup():
+    """
+    Purpose:
+        Create a directory for output of deseq2 and subsequent analysis
+    Return:
+        Creates a directory within the given run, and returns the path to that directory.
+    """
+    now = datetime.datetime.now()
+    output_dir = f"expression_{now.day:02d}{now.month:02d}{now.year:04d}_{now.hour:02d}{now.minute:02d}"
+    print(f"Expression dir: {output_dir}") 
+    return output_dir 
 
 def call_batch_runs(paths, outdir):
     """
@@ -288,19 +300,27 @@ def call_deseq2(conditions):
     Purpose:
 
     Precond:
-        :param conditions: A list of lists containing condition assignments 
-
-
+        Relies on .json input data from get_args.
+        Stored in "paths" variable
     """
     pass
 
 def main():
     args = get_args()
-    outdir = directory_setup()
+    outdir = ""
     if not args.analysis:
+        # This is for a fresh data run. 
+        outdir = fresh_directory_setup()
         call_batch_runs(paths, outdir)
         subprocess.run(["multiqc", outdir])
     # TODO have a check function here to make sure data is high quality before proceeding
+    
+    if args.analysis:
+        # If analysis was already completed, then add to cwd
+        outdir = os.path.join(os.getcwd(), expression_directory_setup())
+    else:
+        # If analysis was part of this run, then outdir will be the newly formed working directory
+        outdir = outdir + expression_directory_setup()
     call_deseq2()
     print("Huh?")
 
