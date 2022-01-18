@@ -5,7 +5,13 @@ pyvenv.cfg
 
 # Storage of test slurm documents
 slurms/
+logs/
 
 # Virtual env
 pipe_RNA/
 htseq_batch/
+
+# diffexp? unknown reason these were created
+diffexp.egg-info/
+dist/
+__pycache__/

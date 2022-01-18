@@ -17,7 +17,8 @@ THREADS=4
 library=$1
 raw_data_files=$2
 index=$3
-outdir=$4
+outdir=${4}/alignment
+mkdir -p outdir
 gtf=$5
 
 NGSF_tag="#NGSF"
