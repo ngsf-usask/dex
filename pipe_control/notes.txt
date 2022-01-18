@@ -193,3 +193,7 @@ Need to download install files still
 
 23Dec21
 Install files located at /datastore/NGSF001/software/src/diffexpr/diffexpr-master
+
+
+18Jan21
+Had to move /datastore/NGSF001/software/src/diffexpr/diffexpr-master/diffexpr/py_deseq.py into the working directory
