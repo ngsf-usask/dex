@@ -48,6 +48,10 @@ def get_args():
     # parser.add_argument("libraries", help="txt file where each line is a library ID")
     parser.add_argument("genomics", help="json file where first line is absolute path to raw data")
     arguments = parser.parse_args()
+
+    with open(submit_file, "r") as read_file:
+        paths = load(read_file)
+
     return arguments
 
 def fresh_directory_setup():
@@ -91,8 +95,8 @@ def call_batch_runs(submit_file, outdir):
         Output and log files from fastp and STAR will be transfered to outdir from plato node.
     """
     # Read submitted JSON file
-    with open(submit_file, "r") as read_file:
-        paths = load(read_file)
+    # with open(submit_file, "r") as read_file:
+    #     paths = load(read_file)
 
     # Call analysis for each library
     for library in paths["samples"]:
@@ -288,13 +292,12 @@ def check_for_completion(library):
 def call_analysis():
     pass
 
-def call_deseq2(conditions):
+def call_deseq2():
     """
     Purpose:
 
     Precond:
-        Relies on .json input data from get_args.
-        Stored in "paths" variable
+        Relies on .json input data from get_args. Stored in "paths" variable
     """
     pass
 
